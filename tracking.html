@@ -23,6 +23,8 @@
     <link rel="stylesheet" href="css/aos.css">
 
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/supabase-config.js"></script>
     
   </head>
   <body>
@@ -87,72 +89,172 @@
     </div>  
 
     
-    <div class="container">
-      <div class="row align-items-center no-gutters align-items-stretch overlap-section">
-        <div class="col-md-4">
-          <div class="feature-1 pricing h-100 text-center">
-            <div class="icon">
-              <span class="icon-dollar"></span>
-            </div>
-            <h2 class="my-4 heading">Best Prices</h2>
-            <p>At Trackpoint, we're committed to providing competitive prices without compromising on quality. We understand that every dollar counts and we're dedicated to helping you save money on your shipping needs
-              our pricing struncture is transparent, and we also offer flexible options to meet your specific needs. </p>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="free-quote bg-dark h-100">
-            <h2 class="my-4 heading  text-center">Track your package</h2>
-            <form method="post">
-              <div class="form-group">
-               
-                <label for="fq_name">Tracking/Reference Number</label>
-                <input type="text" class="form-control btn-block" id="fq_name" name="fq_name" placeholder="Enter your Tracking/Reference number">
-              </div>
-            
-             
-            
-              <div class="form-group">
-                <input type="submit" class="btn btn-primary text-white py-2 px-4 btn-block" value="Track my shipment">  
-              </div>
-            </form>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="feature-3 pricing h-100 text-center">
-            <div class="icon">
-              <span class="icon-phone"></span>
-            </div>
-            <h2 class="my-4 heading">24/7 Support</h2>
-          
-            <p>
-               At Trackpoint we, we understand that logistics doesnt stop at 5pm. That is why we offer 
-               24/7 support to assist you with any questions or concerns you may 
-               have. Our team of experts is always available to provide
-               personalized support and guidance, ensuring that your shipping expirience is seamless 
-               and stress free. Whether you're tracking a package,
-               scheduling a pick-up, or need help with documentation, we're here to help. 
-             
+    <section style="max-width: 700px; margin: 4rem auto; padding: 0 1.5rem;">
+  <h2 style="margin-bottom: 1.5rem; font-size: 1.8rem;">Track Your Shipment</h2>
 
-            </p>
-             
-            <p>
-               Call us on whatsapp: +1(641) 541-1150
-               <br>
-              or
-                <br>
-               Email:trackpointshiproute@gmail.com
+  <div style="display:flex; gap:12px; flex-wrap:wrap;">
+    <input
+      type="text"
+      id="track-input"
+      placeholder="Enter Tracking Number or Reference Number"
+      style="flex:1; min-width:200px; padding:14px 16px; font-size:16px;
+             border-radius:6px; border:2px solid #ddd; outline:none;"
+    />
+    <button
+      onclick="handleTrack()"
+      style="padding:14px 28px; background:#1a73e8; color:white; border:none;
+             border-radius:6px; font-size:16px; font-weight:700; cursor:pointer;"
+    >
+      Track
+    </button>
+  </div>
 
-            </p>
+  <div id="track-result" style="margin-top: 2rem;"></div>
+</section>
+
+<script>
+  async function handleTrack() {
+    const query = document.getElementById('track-input').value.trim()
+    const resultDiv = document.getElementById('track-result')
+
+    if (!query) {
+      resultDiv.innerHTML = '<p style="color:#c0392b;">Please enter a tracking or reference number.</p>'
+      return
+    }
+
+    resultDiv.innerHTML = '<p style="color:#888;">Searching...</p>'
+
+    const { data, error } = await db
+      .from('shipments')
+      .select(`*, tracking_events(id, status, location, description, event_time)`)
+      .or(`tracking_number.eq.${query},reference_number.eq.${query}`)
+      .maybeSingle()
+
+    if (error || !data) {
+      resultDiv.innerHTML = `
+        <div style="padding:1.5rem; border:1px solid #f5c6cb; border-radius:8px;
+                    background:#fff5f5; color:#c0392b;">
+          No shipment found for that number. Please check and try again.<br/>
+          <small style="color:#888; margin-top:8px; display:block;">
+            Need help? WhatsApp us: +1 (641) 541-1150
+          </small>
+        </div>`
+      return
+    }
+
+    const events = (data.tracking_events || []).sort(
+      (a, b) => new Date(b.event_time) - new Date(a.event_time)
+    )
+
+    const statusColors = {
+      'Delivered': '#1a7a4a',
+      'In Transit': '#1a4a7a',
+      'Out for Delivery': '#1a5c8a',
+      'On Hold': '#8a4a1a',
+      'Customs Clearance': '#5a3a8a',
+      'Picked Up': '#2a6a4a',
+      'Order Received': '#4a4a4a'
+    }
+    const color = statusColors[data.status] || '#4a4a4a'
+
+    const timeline = events.length > 0
+      ? events.map((ev, i) => `
+          <div style="display:flex; gap:16px; margin-bottom:1.25rem;">
+            <div style="display:flex; flex-direction:column; align-items:center;">
+              <div style="width:14px; height:14px; border-radius:50%;
+                          background:${i === 0 ? '#1a73e8' : '#ddd'};
+                          margin-top:3px; flex-shrink:0;"></div>
+              ${i < events.length - 1
+                ? '<div style="width:2px; flex:1; background:#e0e0e0; margin:4px 0;"></div>'
+                : ''}
+            </div>
+            <div style="padding-bottom:1rem;">
+              <div style="font-weight:700; color:#222; font-size:15px;">${ev.status}</div>
+              <div style="color:#555; font-size:14px; margin:2px 0;">📍 ${ev.location}</div>
+              ${ev.description
+                ? `<div style="color:#777; font-size:13px;">${ev.description}</div>`
+                : ''}
+              <div style="color:#aaa; font-size:12px; margin-top:4px;">
+                ${new Date(ev.event_time).toLocaleString('en-GB', {
+                  day: 'numeric', month: 'short', year: 'numeric',
+                  hour: '2-digit', minute: '2-digit'
+                })}
+              </div>
+            </div>
+          </div>
+        `).join('')
+      : '<p style="color:#888;">No events logged yet. Check back soon.</p>'
+
+    resultDiv.innerHTML = `
+      <div style="border:1px solid #e0e0e0; border-radius:12px; overflow:hidden;
+                  box-shadow: 0 2px 12px rgba(0,0,0,0.08);">
+
+        <div style="background:${color}; color:white; padding:1.5rem;">
+          <div style="font-size:12px; opacity:0.75; text-transform:uppercase;
+                      letter-spacing:1px; margin-bottom:6px;">Current Status</div>
+          <div style="font-size:1.4rem; font-weight:800;">${data.status}</div>
+        </div>
+
+        <div style="padding:1.5rem;">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:1.5rem;">
+            <div>
+              <div style="font-size:11px; color:#aaa; text-transform:uppercase;
+                          letter-spacing:0.5px; margin-bottom:4px;">Tracking Number</div>
+              <div style="font-weight:700; color:#222;">${data.tracking_number}</div>
+            </div>
+            <div>
+              <div style="font-size:11px; color:#aaa; text-transform:uppercase;
+                          letter-spacing:0.5px; margin-bottom:4px;">Customer</div>
+              <div style="font-weight:700; color:#222;">${data.customer_name}</div>
+            </div>
+            <div>
+              <div style="font-size:11px; color:#aaa; text-transform:uppercase;
+                          letter-spacing:0.5px; margin-bottom:4px;">Route</div>
+              <div style="font-weight:700; color:#222;">${data.origin} → ${data.destination}</div>
+            </div>
+            <div>
+              <div style="font-size:11px; color:#aaa; text-transform:uppercase;
+                          letter-spacing:0.5px; margin-bottom:4px;">Service</div>
+              <div style="font-weight:700; color:#222;">${data.service_type}</div>
+            </div>
+            <div>
+              <div style="font-size:11px; color:#aaa; text-transform:uppercase;
+                          letter-spacing:0.5px; margin-bottom:4px;">Est. Delivery</div>
+              <div style="font-weight:700; color:#222;">
+                ${data.estimated_delivery
+                  ? new Date(data.estimated_delivery).toLocaleDateString('en-GB', {
+                      day: 'numeric', month: 'long', year: 'numeric'
+                    })
+                  : 'TBD'}
+              </div>
+            </div>
+          </div>
+
+          <div style="border-top:1px solid #f0f0f0; padding-top:1.25rem;">
+            <div style="font-weight:800; font-size:1rem; margin-bottom:1.25rem; color:#222;">
+              Shipment Timeline
+            </div>
+            ${timeline}
           </div>
         </div>
       </div>
-    </div>
+    `
+  }
 
+  document.addEventListener('DOMContentLoaded', function() {
+    const input = document.getElementById('track-input')
+    if (input) {
+      input.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') handleTrack()
+      })
+    }
+  })
+</script>
         <div class="site-section">
       <div class="container">
         <div class="row justify-content-center mb-5">
           <div class="col-md-7 text-center border-primary">
-            <h2 class="font-weight-light text-primary">Costumer first service</h2>
+            <h2 class="font-weight-light text-primary">Customer first service</h2>
             <p class="color-black-opacity-5"> <strong> Trackpoint: Delivering Trust, Speed and Care</strong></p>
           </div>
         </div>
@@ -162,10 +264,10 @@
               <img src="images/Fast truck.jpeg" alt="Image" class="img-fluid">
               <h2 class="font-size-regular"><a href="#">Eco-friendly at the Core</a></h2>
               <div class="meta mb-4">by Canna Darius <span class="mx-2">&bullet;</span> Jan 3, 2025 at 9:44 pm <span class="mx-2"></span></div>
-              <p>Trackpoint undertsands that  mordern shipping must balance speed and efficiency with environmental responsibilty.
-                That's why sustainabilty is woven into every aspect of our operations. From investing in fuel-efficient vehicules and eco-friendly packaging
-                to optimizing delivery routes that reduce emmissions, we are committed to minimizing our environmental footprint. Our Ware-houses are increasingly powered by by renewable energy.
-                Our logistical systems are designed to cut waste while maximizing efficiency. By choosing Trackpoint, costumers partner with companies that dont only deliver reliably but also takes 
+              <p>Trackpoint understands that  modern shipping must balance speed and efficiency with environmental responsibility.
+                That's why sustainability is woven into every aspect of our operations. From investing in fuel-efficient vehicles and eco-friendly packaging
+                to optimizing delivery routes that reduce emissions, we are committed to minimizing our environmental footprint. Our Warehouses are increasingly powered by renewable energy.
+                Our logistical systems are designed to cut waste while maximizing efficiency. By choosing Trackpoint, customers partner with companies that don't only deliver reliably but also take 
                 meaningful steps towards a greener future. 
               </p>
             </div> 
@@ -206,10 +308,10 @@
                 <p>Samuel T. Rodriguez</p>
               </figure>
               <blockquote>
-                <p>&ldquo; Before switching to trackpoint shipping, our production line was cobstantly disrupted by unreliable carrier ETAs.
+                <p>&ldquo; Before switching to trackpoint shipping, our production line was constantly disrupted by unreliable carrier ETAs.
                    We were spending hours each week chasing updates and managing fall out  from late deliveries.
-                    Since intergrating Trackpoint's prdeictive EED Enging via their API, everything has changed. 
-                   The accuracy is remarkable we now mange our just-in-time inventory with 98% accuracy. Our production is tighter our supplier relationships are stronger
+                    Since integrating Trackpoint's predictive EDD engine via their API, everything has changed. 
+                   The accuracy is remarkable we now manage our just-in-time inventory with 98% accuracy. Our production is tighter our supplier relationships are stronger
                    and we have completely eliminated the costly buffer stock we used to maintain just to cover logistics uncertainty. Trackpoint did not just fix our problem.
                     They transformed how we run our entire supply chain  &rdquo;</p>
               </blockquote>
@@ -223,8 +325,8 @@
               </figure>
               <blockquote>
                 <p>&ldquo; In medical supply logistics, there is no room for excuses. When we have an urgent air freight need, capacity and timing are non-negotiable. We chose Trackpoint after being burned
-                  twice by other carriers who promised capacity and then rolled our cargo to later flights without warning. With Trackpoint, that simply does not happen. Their block space agreeements with premium carriers
-                  mean that when they confirm a booking, that slot is locked. We moved emergency medical supplies from south East-Asia to th US east coast on a 48hr notice delivered exactly as mentioned, not a minute later. That kind of performance is why Trackpoint is now our first and only acll for critical air freight. &rdquo;</p>
+                  twice by other carriers who promised capacity and then rolled our cargo to later flights without warning. With Trackpoint, that simply does not happen. Their block space agreements with premium carriers
+                  mean that when they confirm a booking, that slot is locked. We moved emergency medical supplies from Southeast Asia to the US east coast on a 48hr notice delivered exactly as mentioned, not a minute later. That kind of performance is why Trackpoint is now our first and only call for critical air freight. &rdquo;</p>
               </blockquote>
             </div>
           </div>
@@ -237,10 +339,10 @@
               </figure>
               <blockquote>
                 <p>&ldquo; We ship oversized industrial machinery to some of the most difficult port destinations in the world.
-                   The documentatiom, costums compliance, port coordination, and damge risk involved used to make international shipping our biggest 
+                   The documentation, customs compliance, port coordination, and damage risk involved used to make international shipping our biggest 
                   operational headache. Our Trackpoint Logistics Specialist changed everything. From day one, they take complete ownership not just 
-                  tracking our shipment but proactively managing potential obstacle before it became problem. when a port strike threatened one of a shipments in transit, they had rerouted us to an alternate terminal before we even knew there was an issue. 
-                   The Geo-Verified proof of delivery they provide is gold standard it closes every order with documneted certainty &rdquo;</p>
+                  tracking our shipment but proactively managing potential obstacle before it became a problem. When a port strike threatened one of a shipments in transit, they had rerouted us to an alternate terminal before we even knew there was an issue. 
+                   The Geo-Verified proof of delivery they provide is gold standard it closes every order with documented certainty &rdquo;</p>
               </blockquote>
             </div>
           </div>
@@ -253,9 +355,9 @@
               </figure>
               <blockquote>
                 <p>&ldquo; Pricing transparency in freight logistics is rare. Hidden fuel charges, unexpected terminal handling fees, documentation
-                  charges that appear out of nowhere on the final invoice it is an industry wide problem that we had accepted as normal. Trackpoint showed us it does not have to be that way 
-                  . their words are comprehensive and final. What we are shown at the booking is what we pay at delivery. With Zero expectations. For our high volume refional LTL 
-                  movements, their on time delivery performance consistently exceeds 96% the best rates we have tracked across any carrier in our network. The combination of pricing integrity and operational reliabilty has made Trackpoint our priary logistics partner for all regional distribution &rdquo;</p>
+                  charges that appear out of nowhere on the final invoice it is an industry-wide problem that we had accepted as normal. Trackpoint showed us it does not have to be that way 
+                   Their words are comprehensive and final. What we are shown at the booking is what we pay at delivery. With zero exceptions. For our high volume regional LTL 
+                  movements, their on time delivery performance consistently exceeds 96% the best rates we have tracked across any carrier in our network. The combination of pricing integrity and operational reliability has made Trackpoint our primary logistics partner for all regional distribution &rdquo;</p>
               </blockquote>
             </div>
           </div>
@@ -279,7 +381,7 @@
               <span class="number">1</span>
               <div class="how-it-work-body">
                 <h2>Access the tracking portal </h2>
-                <p class="mb-5"> Navigate to the tracking page from the main menu above or the call to action button on the below the hero section. You will be taken directly to Trackpoint's live tracking portal your real time command center for complete shipment visibilty </p>
+                <p class="mb-5"> Navigate to the tracking page from the main menu above or the call to action button below the hero section. You will be taken directly to Trackpoint's live tracking portal, your real-time command center for complete shipment visibility </p>
               
               </div>
             </div>
@@ -290,8 +392,8 @@
               <span class="number">2</span>
               <div class="how-it-work-body">
                 <h2>Enter tracking or Reference number</h2>
-                <p class="mb-5"> In the search bar, type and or paste either your tracking number(e.g TRK-2024-001) or your reference number providedat the time of booking.
-                  both formats are acceptable. Once entered, click the track shipment button to retreive your results  instantly 
+                <p class="mb-5"> In the search bar, type and or paste either your tracking number(e.g TRK-2024-001) or your reference number provided at the time of booking.
+                  both formats are acceptable. Once entered, click the track shipment button to retrieve your results  instantly 
                 </p>
               
                 
@@ -304,7 +406,7 @@
               <span class="number">3</span>
               <div class="how-it-work-body">
                 <h2>View Live Status & Full Timeline</h2>
-                <p class="mb-5">Your shipment's current status appears immidiately - including the official status (e.g "out of delivery", "customs clearance", "Delivered") and your estimated delivery date. Scroll down to explore the complete event timeline - evry check point every location and time stamp from origin to destination, updated in real time.</p>
+                <p class="mb-5">Your shipment's current status appears immediately - including the official status (e.g "out of delivery", "customs clearance", "Delivered") and your estimated delivery date. Scroll down to explore the complete event timeline - every check point every location and time stamp from origin to destination, updated in real time.</p>
               
               </div>
             </div>

@@ -23,6 +23,9 @@
     <link rel="stylesheet" href="css/aos.css">
 
     <link rel="stylesheet" href="css/style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/supabase-config.js"></script>
     
   </head>
   <body>
@@ -146,7 +149,7 @@ Geo-Verification: Every critical milestone, from terminal departure to final del
                 <h3> Air Freight</h3>
                 <p>Our Air Freight service is defined by its speed, but its true value is in its schedule reliability.
                   While air is the fastest mode, we eliminate the common pitfalls of cargo "rolling" to a later flight. 
-                  Trackingpoint utilizes exclusive block space agreements (BSA) with premium global air carriers,
+                  Trackpoint utilizes exclusive block space agreements (BSA) with premium global air carriers,
                   ensuring booked capacity is always secured capacity. This guarantees your time-critical, high-value, 
                   or perishable shipments—from pharmaceuticals to high-tech components—are on the Next Flight Out (NFO),
                    as promised. We provide true 1-to-3 day transit certainty globally, backed by a zero-tolerance policy for manifest errors,
@@ -175,7 +178,7 @@ Geo-Verification: Every critical milestone, from terminal departure to final del
               <div class="unit-4-icon mr-4"><span class="text-primary flaticon-frontal-truck"></span></div>
               <div>
                 <h3>Ground Shipping</h3>
-                <p>Ground shipping is the backbone of regional and final-mile logistics. Trackingpoint’s reliability on the road is 
+                <p>Ground shipping is the backbone of regional and final-mile logistics. Trackpoint’s reliability on the road is 
                   maintained through a dedicated, modern fleet equipped with live GPS and telematics. We do not rely on third-party
                    carrier scans alone; we track the asset itself. This allows for proactive re-routing around traffic and weather, 
                    and guarantees on-time pickup and delivery percentages that surpass industry averages. For Less-Than-Truckload (LTL), 
@@ -192,8 +195,8 @@ Geo-Verification: Every critical milestone, from terminal departure to final del
               <div class="unit-4-icon mr-4"><span class="text-primary flaticon-barn"></span></div>
               <div>
                 <h3>Warehousing</h3>
-                <p>At trackpoint, our warehousing services are designed to provide safe, secure and efficient storage solution for your goods. OUr state of the art facilities are strategically located near major transportation hubs, ensuring easy access and convinient logistics management. with flexible storage options, including short term and long term storage, you canchoose the solutrion that best fits your needs.  Our expert team is dedicated to providing accurate inventory management, real-time tracking, and monitoring to ensure
-                  maximum visibility and conrol over cargo. Whether you are importing, exporting, or distributing goods within the local market, our ware housing services have got you covered.   </p>
+                <p>At Trackpoint, our warehousing services are designed to provide safe, secure and efficient storage solution for your goods. OUr state of the art facilities are strategically located near major transportation hubs, ensuring easy access and convinient logistics management. with flexible storage options, including short term and long term storage, you can choose the solution that best fits your needs.  Our expert team is dedicated to providing accurate inventory management, real-time tracking, and monitoring to ensure
+                  maximum visibility and control over cargo. Whether you are importing, exporting, or distributing goods within the local market, our ware housing services have got you covered.   </p>
               
               </div>
             </div>
@@ -221,7 +224,7 @@ Geo-Verification: Every critical milestone, from terminal departure to final del
                   routing software that plans the most efficient route and provides the customer with a precise two-hour delivery window. 
                   This eliminates guesswork. Furthermore, every final delivery is recorded with Electronic Proof of Delivery (e-POD),
                    which includes a recipient signature, a photo of the package at the drop-off location, and a GPS-verified timestamp.
-                    Our drivers are highly trained Trackingpoint Ambassadors, ensuring the final physical interaction is professional, accurate,
+                    Our drivers are highly trained Trackpoint Ambassadors, ensuring the final physical interaction is professional, accurate,
                    and provides you with the indisputable, geostamped accountability needed for immediate closure of your order cycle.</p>
                
               </div>
@@ -254,10 +257,10 @@ Geo-Verification: Every critical milestone, from terminal departure to final del
                 <p>Samuel T. Rodriguez</p>
               </figure>
               <blockquote>
-                <p>&ldquo; Before switching to trackpoint shipping, our production line was cobstantly disrupted by unreliable carrier ETAs.
+                <p>&ldquo; Before switching to trackpoint shipping, our production line was constantly disrupted by unreliable carrier ETAs.
                    We were spending hours each week chasing updates and managing fall out  from late deliveries.
-                    Since intergrating Trackpoint's prdeictive EED Enging via their API, everything has changed. 
-                   The accuracy is remarkable we now mange our just-in-time inventory with 98% accuracy. Our production is tighter our supplier relationships are stronger
+                    Since integrating Trackpoint's predictive EDD engine via their API, everything has changed. 
+                   The accuracy is remarkable we now manage our just-in-time inventory with 98% accuracy. Our production is tighter our supplier relationships are stronger
                    and we have completely eliminated the costly buffer stock we used to maintain just to cover logistics uncertainty. Trackpoint did not just fix our problem.
                     They transformed how we run our entire supply chain  &rdquo;</p>
               </blockquote>
@@ -271,8 +274,8 @@ Geo-Verification: Every critical milestone, from terminal departure to final del
               </figure>
               <blockquote>
                 <p>&ldquo; In medical supply logistics, there is no room for excuses. When we have an urgent air freight need, capacity and timing are non-negotiable. We chose Trackpoint after being burned
-                  twice by other carriers who promised capacity and then rolled our cargo to later flights without warning. With Trackpoint, that simply does not happen. Their block space agreeements with premium carriers
-                  mean that when they confirm a booking, that slot is locked. We moved emergency medical supplies from south East-Asia to th US east coast on a 48hr notice delivered exactly as mentioned, not a minute later. That kind of performance is why Trackpoint is now our first and only acll for critical air freight. &rdquo;</p>
+                  twice by other carriers who promised capacity and then rolled our cargo to later flights without warning. With Trackpoint, that simply does not happen. Their block space agreements with premium carriers
+                  mean that when they confirm a booking, that slot is locked. We moved emergency medical supplies from Southeast Asia to the US east coast on a 48hr notice delivered exactly as mentioned, not a minute later. That kind of performance is why Trackpoint is now our first and only call for critical air freight. &rdquo;</p>
               </blockquote>
             </div>
           </div>
@@ -285,10 +288,10 @@ Geo-Verification: Every critical milestone, from terminal departure to final del
               </figure>
               <blockquote>
                 <p>&ldquo;We ship oversized industrial machinery to some of the most difficult port destinations in the world.
-                   The documentatiom, costums compliance, port coordination, and damge risk involved used to make international shipping our biggest 
+                   The documentation, customs compliance, port coordination, and damage risk involved used to make international shipping our biggest 
                   operational headache. Our Trackpoint Logistics Specialist changed everything. From day 1, they take complete ownership not just 
-                  tracking our shipment but proactively managing potential obstacle before it became problem. when a port strike threatened one of a shipments in transit, they had rerouted us to an alternate terminal before we even knew there was an issue. 
-                   The Geo-Verified proof of delivery they provide is gold standard it closes every order with documneted certainty &rdquo;</p>
+                  tracking our shipment but proactively managing potential obstacle before it became a problem. When a port strike threatened one of a shipments in transit, they had rerouted us to an alternate terminal before we even knew there was an issue. 
+                   The Geo-Verified proof of delivery they provide is gold standard it closes every order with documented certainty &rdquo;</p>
               </blockquote>
             </div>
           </div>
@@ -301,9 +304,9 @@ Geo-Verification: Every critical milestone, from terminal departure to final del
               </figure>
               <blockquote>
                 <p>&ldquo; Pricing transparency in freight logistics is rare. Hidden fuel charges, unexpected terminal handling fees, documentation
-                  charges that appear out of nowhere on the final invoice it is an industry wide problem that we had accepted as normal. Trackpoint showed us it does not have to be that way 
-                  . their words are comprehensive and final. What we are shown at the booking is what we pay at delivery. With Zero expectations. For our high volume refional LTL 
-                  movements, their on time delivery performance consistently exceeds 96% the best rates we have tracked across any carrier in our network. The combination of pricing integrity and operational reliabilty has made Trackpoint our priary logistics partner for all regional distribution &rdquo;</p>
+                  charges that appear out of nowhere on the final invoice it is an industry-wide problem that we had accepted as normal. Trackpoint showed us it does not have to be that way 
+                   Their words are comprehensive and final. What we are shown at the booking is what we pay at delivery. With zero exceptions. For our high volume regional LTL 
+                  movements, their on time delivery performance consistently exceeds 96% the best rates we have tracked across any carrier in our network. The combination of pricing integrity and operational reliability has made Trackpoint our primary logistics partner for all regional distribution &rdquo;</p>
               </blockquote>
             </div>
           </div>
