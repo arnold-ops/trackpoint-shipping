@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trackpoint Admin</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/supabase-config.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f1117; color: #e0e0e0; padding: 1.5rem; }
+    h3 { color: #a0c4ff; margin: 1.5rem 0 0.75rem; border-bottom: 1px solid #2a2a3a; padding-bottom: 0.5rem; font-size: 1rem; }
+    input, select, textarea {
+      width: 100%; padding: 10px 12px; margin: 4px 0 12px;
+      background: #1e1e2e; border: 1px solid #2a2a3a; color: #e0e0e0;
+      border-radius: 6px; font-size: 14px;
+    }
+    input:focus, select:focus { outline: none; border-color: #a0c4ff; }
+    button {
+      padding: 10px 20px; background: #1a73e8; color: white;
+      border: none; cursor: pointer; border-radius: 6px;
+      font-size: 14px; font-weight: 600; margin-right: 8px; margin-bottom: 8px;
+    }
+    button.danger { background: #c0392b; }
+    button.gray { background: #2a2a3a; }
+    .card { background: #1e1e2e; border: 1px solid #2a2a3a; border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem; }
+    .msg { padding: 8px 12px; border-radius: 6px; margin: 8px 0; font-size: 13px; }
+    .success { background: #1a3a28; color: #4ade80; }
+    .error { background: #3a1a1a; color: #f87171; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media(max-width:600px) { .grid { grid-template-columns: 1fr; } }
+    .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; }
+    .logo { font-size: 1.1rem; font-weight: 800; color: #a0c4ff; letter-spacing: 1px; }
+    .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; }
+    .b-green { background:#1a3a28; color:#4ade80; }
+    .b-blue { background:#1a2a3a; color:#60a5fa; }
+    .b-orange { background:#3a2a1a; color:#fb923c; }
+    .b-gray { background:#2a2a3a; color:#aaa; }
+  </style>
+</head>
+<body>
+
+<div id="login-box" style="max-width:380px; margin:5rem auto;">
+  <div style="text-align:center; margin-bottom:1.5rem;">
+    <div style="font-size:1.4rem; font-weight:800; color:#a0c4ff; letter-spacing:2px;">TRACKPOINT</div>
+    <div style="color:#666; font-size:13px; margin-top:4px;">Admin Panel</div>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0; border:none;">Sign In</h3>
+    <input type="email" id="login-email" placeholder="Email address" />
+    <input type="password" id="login-pass" placeholder="Password" />
+    <button onclick="doLogin()" style="width:100%;">Login</button>
+    <div id="login-msg"></div>
+  </div>
+</div>
+
+<div id="panel" style="display:none; max-width:860px; margin:0 auto;">
+
+  <div class="topbar">
+    <div class="logo">TRACKPOINT ADMIN</div>
+    <button class="gray" onclick="doLogout()">Logout</button>
+  </div>
+
+  <h3>➕ New Shipment</h3>
+  <div class="card">
+    <div class="grid">
+      <div>
+        <label>Tracking Number *</label>
+        <input id="s-track" placeholder="TRK-2024-001" />
+      </div>
+      <div>
+        <label>Reference Number</label>
+        <input id="s-ref" placeholder="Optional" />
+      </div>
+      <div>
+        <label>Customer Name *</label>
+        <input id="s-name" placeholder="Full name" />
+      </div>
+      <div>
+        <label>Customer Email</label>
+        <input type="email" id="s-email" placeholder="Optional" />
+      </div>
+      <div>
+        <label>Customer Phone</label>
+        <input id="s-phone" placeholder="Optional" />
+      </div>
+      <div>
+        <label>Service Type *</label>
+        <select id="s-service">
+          <option>Air Freight</option>
+          <option>Ocean Freight</option>
+          <option>Ground Shipping</option>
+          <option>Warehousing</option>
+          <option>Last-Mile Delivery</option>
+        </select>
+      </div>
+      <div>
+        <label>Origin *</label>
+        <input id="s-origin" placeholder="Louisville, Kentucky, USA" />
+      </div>
+      <div>
+        <label>Destination *</label>
+        <input id="s-dest" placeholder="Douala, Cameroon" />
+      </div>
+      <div>
+        <label>Estimated Delivery</label>
+        <input type="date" id="s-eta" />
+      </div>
+      <div>
+        <label>Weight (kg)</label>
+        <input type="number" id="s-weight" placeholder="Optional" />
+      </div>
+    </div>
+    <label>Package Description</label>
+    <textarea id="s-desc" rows="2" placeholder="Optional description of contents"></textarea>
+    <button onclick="createShipment()">Create Shipment</button>
+    <div id="create-msg"></div>
+  </div>
+
+  <h3>🔄 Update Status</h3>
+  <div class="card">
+    <div class="grid">
+      <div>
+        <label>Tracking Number *</label>
+        <input id="u-track" placeholder="TRK-2024-001" />
+      </div>
+      <div>
+        <label>New Status *</label>
+        <select id="u-status">
+          <option>Order Received</option>
+          <option>Picked Up</option>
+          <option>In Transit</option>
+          <option>Customs Clearance</option>
+          <option>Out for Delivery</option>
+          <option>Delivered</option>
+          <option>On Hold</option>
+        </select>
+      </div>
+      <div>
+        <label>Current Location *</label>
+        <input id="u-location" placeholder="JFK Airport, New York, USA" />
+      </div>
+      <div>
+        <label>Event Note</label>
+        <input id="u-note" placeholder="e.g. Cleared customs, awaiting collection" />
+      </div>
+    </div>
+    <button onclick="updateStatus()">Add Update</button>
+    <div id="update-msg"></div>
+  </div>
+
+  <h3>📦 All Shipments</h3>
+  <button class="gray" onclick="loadShipments()">↻ Refresh</button>
+  <div id="shipments" style="margin-top:1rem;"></div>
+</div>
+
+<script>
+  function badgeClass(s) {
+    if (s === 'Delivered') return 'b-green'
+    if (['In Transit','Out for Delivery','Picked Up'].includes(s)) return 'b-blue'
+    if (s === 'On Hold') return 'b-orange'
+    return 'b-gray'
+  }
+
+  function flash(id, text, type) {
+    const el = document.getElementById(id)
+    el.innerHTML = `<div class="msg ${type}">${text}</div>`
+    setTimeout(() => el.innerHTML = '', 5000)
+  }
+
+  window.addEventListener('load', async () => {
+    const { data: { session } } = await db.auth.getSession()
+    if (session) { showPanel(); loadShipments() }
+    else document.getElementById('login-box').style.display = 'block'
+  })
+
+  async function doLogin() {
+    const { error } = await db.auth.signInWithPassword({
+      email: document.getElementById('login-email').value,
+      password: document.getElementById('login-pass').value
+    })
+    if (error) {
+      document.getElementById('login-msg').innerHTML =
+        `<div class="msg error">${error.message}</div>`
+    } else {
+      showPanel()
+      loadShipments()
+    }
+  }
+
+  async function doLogout() {
+    await db.auth.signOut()
+    location.reload()
+  }
+
+  function showPanel() {
+    document.getElementById('login-box').style.display = 'none'
+    document.getElementById('panel').style.display = 'block'
+  }
+
+  async function createShipment() {
+    const payload = {
+      tracking_number: document.getElementById('s-track').value.trim(),
+      reference_number: document.getElementById('s-ref').value.trim() || null,
+      customer_name: document.getElementById('s-name').value.trim(),
+      customer_email: document.getElementById('s-email').value.trim() || null,
+      customer_phone: document.getElementById('s-phone').value.trim() || null,
+      origin: document.getElementById('s-origin').value.trim(),
+      destination: document.getElementById('s-dest').value.trim(),
+      service_type: document.getElementById('s-service').value,
+      estimated_delivery: document.getElementById('s-eta').value || null,
+      weight_kg: document.getElementById('s-weight').value || null,
+      description: document.getElementById('s-desc').value.trim() || null,
+      status: 'Order Received'
+    }
+
+    if (!payload.tracking_number || !payload.customer_name || !payload.origin || !payload.destination) {
+      flash('create-msg', 'Please fill in all required fields marked with *', 'error')
+      return
+    }
+
+    const { error } = await db.from('shipments').insert([payload])
+    if (error) {
+      flash('create-msg', error.message, 'error')
+    } else {
+      flash('create-msg', `✅ Shipment ${payload.tracking_number} created.`, 'success')
+      loadShipments()
+    }
+  }
+
+  async function updateStatus() {
+    const num = document.getElementById('u-track').value.trim()
+    const status = document.getElementById('u-status').value
+    const location = document.getElementById('u-location').value.trim()
+    const note = document.getElementById('u-note').value.trim()
+
+    if (!num || !location) {
+      flash('update-msg', 'Tracking number and location are required.', 'error')
+      return
+    }
+
+    const { data: ship, error: fe } = await db
+      .from('shipments').select('id').eq('tracking_number', num).maybeSingle()
+
+    if (fe || !ship) {
+      flash('update-msg', 'Shipment not found. Check the tracking number.', 'error')
+      return
+    }
+
+    const { error: ee } = await db.from('tracking_events').insert([{
+      shipment_id: ship.id, status, location, description: note
+    }])
+
+    const { error: se } = await db.from('shipments').update({ status }).eq('id', ship.id)
+
+    if (ee || se) {
+      flash('update-msg', 'Update failed. Try again.', 'error')
+    } else {
+      flash('update-msg', `✅ Status updated to "${status}".`, 'success')
+      loadShipments()
+    }
+  }
+
+  async function loadShipments() {
+    const { data, error } = await db
+      .from('shipments').select('*').order('created_at', { ascending: false })
+
+    const el = document.getElementById('shipments')
+    if (error || !data || !data.length) {
+      el.innerHTML = '<div class="card" style="color:#666;">No shipments yet.</div>'
+      return
+    }
+
+    el.innerHTML = data.map(s => `
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px;">
+          <div>
+            <div style="font-weight:800; color:#fff; font-size:1rem;">${s.tracking_number}</div>
+            ${s.reference_number ? `<div style="color:#666; font-size:12px;">Ref: ${s.reference_number}</div>` : ''}
+            <div style="color:#a0c4ff; margin:4px 0;">${s.customer_name}</div>
+            <div style="color:#888; font-size:13px;">${s.origin} → ${s.destination}</div>
+            <div style="color:#888; font-size:13px;">${s.service_type} | ETA: ${s.estimated_delivery || 'TBD'}</div>
+          </div>
+          <div style="text-align:right;">
+            <span class="badge ${badgeClass(s.status)}">${s.status}</span>
+            <br/><br/>
+            <button class="danger" onclick="deleteShip('${s.id}','${s.tracking_number}')">Delete</button>
+          </div>
+        </div>
+      </div>
+    `).join('')
+  }
+
+  async function deleteShip(id, num) {
+    if (!confirm(`Delete ${num}? This cannot be undone.`)) return
+    const { error } = await db.from('shipments').delete().eq('id', id)
+    if (!error) loadShipments()
+  }
+</script>
+
+</body>
+</html>
